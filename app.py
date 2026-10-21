@@ -6,6 +6,87 @@ from authlib.integrations.flask_client import OAuth
 from supabase import create_client, Client
 
 app = Flask(__name__)
+
+# Eksik HTML sayfalarını otomatik oluştur
+import os
+
+TEMPLATES_DIR = os.path.join(os.path.dirname(__file__), "templates")
+os.makedirs(TEMPLATES_DIR, exist_ok=True)
+
+COMMON_TEMPLATE = """
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Oflenk RP - Sayfa</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #111827;
+            color: #f9fafb;
+            margin: 0;
+            padding: 24px;
+        }
+        main {
+            max-width: 850px;
+            margin: 30px auto;
+            background: #1f2937;
+            padding: 24px;
+            border-radius: 14px;
+        }
+        a { color: #93c5fd; margin-right: 12px; }
+        nav { line-height: 2.5; }
+    </style>
+</head>
+<body>
+<main>
+    <h1>Oflenk RP</h1>
+    <h2>{{ request.path }}</h2>
+    <p>Bu sayfanın HTML şablonu otomatik oluşturuldu.</p>
+    <nav>
+        <a href="/">Ana Sayfa</a>
+        <a href="/login">Giriş Yap</a>
+        <a href="/logout">Çıkış Yap</a>
+    </nav>
+    {% if servers is defined %}
+        <h3>Sunucular</h3>
+        {% for key, value in servers.items() %}
+            <p><a href="/server/{{ key }}">{{ key }}</a></p>
+        {% endfor %}
+    {% endif %}
+    {% with messages = get_flashed_messages() %}
+        {% for message in messages %}
+            <p>{{ message }}</p>
+        {% endfor %}
+    {% endwith %}
+</main>
+</body>
+</html>
+"""
+
+missing_templates = [
+    "dashboard.html",
+    "setup.html",
+    "rules.html",
+    "rule_form.html",
+    "complaints.html",
+    "complaint_form.html",
+    "applications.html",
+    "application_form.html",
+    "organizations.html",
+    "companies.html",
+    "company_form.html",
+    "notifications.html",
+    "admin.html",
+]
+
+for filename in missing_templates:
+    path = os.path.join(TEMPLATES_DIR, filename)
+    if not os.path.exists(path):
+        with open(path, "w", encoding="utf-8") as file:
+            file.write(COMMON_TEMPLATE)
+            
 app.secret_key = os.environ.get("SECRET_KEY", "CHANGE_ME_IN_PRODUCTION")
 
 SUPABASE_URL = os.environ.get("SUPABASE_URL")
